@@ -172,7 +172,7 @@ class TaskJuggler
               "Cannot get project list from daemon: #{$!}")
       end
 
-      text = "== Welcome to the TaskJuggler Project Server ==\n----\n"
+      text = +"== Welcome to the TaskJuggler Project Server ==\n----\n"
       projects.each do |id|
         if id == projectId
           # Show the list of reports for this project.
