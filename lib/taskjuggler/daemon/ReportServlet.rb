@@ -105,9 +105,13 @@ class TaskJuggler
       # text from the report server. This buffer will contain the generated
       # report as HTML encoded text. They will be send via DRb, so we have to
       # extend them with DRbUndumped.
-      stdOut = StringIO.new('')
+      #
+      # Note: In Ruby 4.0+, StringIO.new('') unexpectedly creates a read-only
+      # buffer in the web server context. Using StringIO.new without arguments
+      # avoids this issue. Root cause not yet identified.
+      stdOut = StringIO.new
       stdOut.extend(DRbUndumped)
-      stdErr = StringIO.new('')
+      stdErr = StringIO.new
       stdErr.extend(DRbUndumped)
 
       begin
@@ -119,6 +123,7 @@ class TaskJuggler
         end
 
         error('rs_io_connect_failed', "Can't connect IO: #{$!}")
+        return
       end
 
       # Ask the ReportServer to generate the reports with the provided ID.
