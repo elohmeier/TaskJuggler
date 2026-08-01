@@ -20,6 +20,11 @@ require_relative 'lib/taskjuggler/version'
 PROJECT_VERSION = VERSION
 PROJECT_NAME = 'TaskJuggler'
 
+filesIn = lambda do |directory|
+  files = (`git ls-files -- #{directory} 2>/dev/null`).split("\n")
+  files.empty? ? Dir.glob("#{directory}/**/*").select { |f| File.file?(f) } : files
+end
+
 GEM_SPEC = Gem::Specification.new { |s|
   s.name = 'taskjuggler'
   s.version = PROJECT_VERSION
@@ -40,19 +45,18 @@ management.
 EOT
   s.license = 'GPL-2.0-only'
   s.require_path = 'lib'
-  s.files = (`git ls-files -- lib`).split("\n") +
-            (`git ls-files -- data`).split("\n") +
-            (`git ls-files -- manual`).split("\n") +
-            (`git ls-files -- examples`).split("\n") +
-            (`git ls-files -- tasks`).split("\n") +
+  s.files = filesIn.call('lib') +
+            filesIn.call('data') +
+            filesIn.call('manual') +
+            filesIn.call('examples') +
+            filesIn.call('tasks') +
             %w( .gemtest taskjuggler.gemspec Rakefile ) +
             # Generated files, not contained in Git repository.
             Dir.glob('manual/html/**/*') + Dir.glob('man/*.1')
   s.bindir = 'bin'
-  s.executables = (`git ls-files -- bin`).split("\n").
+  s.executables = filesIn.call('bin').
                   map { |fn| File.basename(fn) }
-  s.test_files = (`git ls-files -- test`).split("\n") +
-                 (`git ls-files -- spec`).split("\n")
+  s.test_files = filesIn.call('test') + filesIn.call('spec')
 
   s.extra_rdoc_files = %w( README.rdoc COPYING )
 
