@@ -41,7 +41,7 @@ EOT
         $stdout.reopen('stdout.log', 'w')
         $stderr.reopen('stderr.log', 'w')
         res = stdIoWrapper do
-          Tj3Daemon.new.main(%w( --silent ))
+          Tj3Daemon.new.main(%w( --silent --dont-daemonize ))
         end
         raise "Failed to start tj3d: #{res.stdErr}" if res.returnValue != 0
         exit!

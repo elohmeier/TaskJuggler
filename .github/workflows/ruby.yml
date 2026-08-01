@@ -1,0 +1,43 @@
+name: Ruby
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version:
+          - '3.2'
+          - '3.3'
+          - '3.4'
+          - '4.0'
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true
+      - name: Run unit and specification tests
+        run: bundle exec rake test
+      - name: Check and schedule a project
+        run: |
+          bundle exec ruby -Ilib lib/tj3.rb --silent --check-syntax test/TestSuite/Syntax/Correct/Simple.tjp
+          bundle exec ruby -Ilib lib/tj3.rb --silent --no-reports test/TestSuite/Syntax/Correct/Simple.tjp
+          bundle exec ruby -Ilib lib/tj3.rb --silent --no-reports --list-reports '.*' test/TestSuite/Syntax/Correct/tutorial.tjp
+      - name: Generate reports with multiple workers
+        run: |
+          mkdir -p "${RUNNER_TEMP}/taskjuggler-reports"
+          bundle exec ruby -Ilib lib/tj3.rb --silent -c 2 \
+            --output-dir "${RUNNER_TEMP}/taskjuggler-reports" \
+            test/TestSuite/Syntax/Correct/tutorial.tjp
+          test "$(find "${RUNNER_TEMP}/taskjuggler-reports" -type f | wc -l)" -eq 20
+      - name: Exercise the daemon and web server
+        run: bundle exec ruby test/web_server_smoke.rb
