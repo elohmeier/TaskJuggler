@@ -1,6 +1,7 @@
 benchmarks/css
 benchmarks/icons
 benchmarks/scripts
+/Gemfile.lock
 CHANGELOG
 doc
 lib/css

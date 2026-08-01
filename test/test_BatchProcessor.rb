@@ -84,7 +84,8 @@ class TestProject < Test::Unit::TestCase
   end
 
   def postprocess(job)
-    assert_equal(job.retVal, job.jobId, 'PID mismatch')
+    assert_kind_of(Process::Status, job.retVal)
+    assert_equal(job.jobId, job.retVal.exitstatus, 'PID mismatch')
     assert_equal("job #{job.jobId}", job.tag)
     text = <<"EOT"
 Job #{job.jobId} started
@@ -99,4 +100,3 @@ EOT
     assert_equal(text, job.stderr, "STDERR mismatch #{job.stderr}")
   end
 end
-

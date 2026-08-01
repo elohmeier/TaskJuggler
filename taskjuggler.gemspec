@@ -15,15 +15,10 @@
 lib = File.expand_path('../lib', __FILE__)
 $:.unshift lib unless $:.include?(lib)
 
-# Get software version number from Tj3Config class.
-begin
-  $: << 'lib'
-  require 'taskjuggler/Tj3Config'
-  PROJECT_VERSION = AppConfig.version
-  PROJECT_NAME = AppConfig.softwareName
-rescue LoadError
-  raise "Error: Cannot determine software settings: #{$!}"
-end
+# Keep gem metadata loadable before runtime dependencies have been installed.
+require_relative 'lib/taskjuggler/version'
+PROJECT_VERSION = VERSION
+PROJECT_NAME = 'TaskJuggler'
 
 GEM_SPEC = Gem::Specification.new { |s|
   s.name = 'taskjuggler'
@@ -52,19 +47,23 @@ EOT
             (`git ls-files -- tasks`).split("\n") +
             %w( .gemtest taskjuggler.gemspec Rakefile ) +
             # Generated files, not contained in Git repository.
-            %w( data/tjp.vim ) + Dir.glob('manual/html/**/*') + Dir.glob('man/*.1')
+            Dir.glob('manual/html/**/*') + Dir.glob('man/*.1')
   s.bindir = 'bin'
   s.executables = (`git ls-files -- bin`).split("\n").
                   map { |fn| File.basename(fn) }
   s.test_files = (`git ls-files -- test`).split("\n") +
                  (`git ls-files -- spec`).split("\n")
 
-  s.extra_rdoc_files = %w( README.rdoc COPYING CHANGELOG )
+  s.extra_rdoc_files = %w( README.rdoc COPYING )
 
+  s.add_dependency('base64', '>= 0.2.0')
+  s.add_dependency('drb', '>= 2.1.0')
   s.add_dependency('mail', '~> 2.7', '>= 2.7.1')
   s.add_dependency('webrick', '~> 1.9', '>= 1.9.1')
   s.add_runtime_dependency('term-ansicolor', '~> 1.7', '>= 1.7.1')
-  s.add_development_dependency('rspec', '~> 2.5', '>= 2.5.0')
+  s.add_development_dependency('rake', '~> 13.0')
+  s.add_development_dependency('rspec', '~> 3.13')
+  s.add_development_dependency('test-unit', '~> 3.7')
   s.platform = Gem::Platform::RUBY
-  s.required_ruby_version  = '>= 2.0.0'
+  s.required_ruby_version  = '>= 3.2.0'
 }
