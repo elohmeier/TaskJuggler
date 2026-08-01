@@ -147,11 +147,7 @@ class TaskJuggler
   # otherwise.
   def generateReports(outputDir = nil)
     @project.checkReports
-    if outputDir
-      # Make sure the output directory path always ends with a '/' unless empty.
-      outputDir += '/' unless outputDir.empty? || outputDir[-1] == '/'
-      @project.outputDir = outputDir
-    end
+    setOutputDir(outputDir)
     Log.enter('reports', 'Generating reports ...')
 
     begin
@@ -182,9 +178,11 @@ class TaskJuggler
   # matching IDs are generated. _formats_ is a list of formats (e. g. :html,
   # :csv, etc.). _dynamicAtributes_ is a String that may contain attributes to
   # supplement the report definition. The String must be in TJP format and may
-  # be nil if no additional attributes are provided.
+  # be nil if no additional attributes are provided. _outputDir_ overrides the
+  # directory where the selected report and its support files are written.
   def generateReport(reportId, regExpMode, formats = nil,
-                     dynamicAttributes = nil)
+                     dynamicAttributes = nil, outputDir = nil)
+    setOutputDir(outputDir)
     begin
       Log.enter('generateReport', 'Generating report #{reportId} ...')
       @project.generateReport(reportId, regExpMode, formats, dynamicAttributes)
@@ -198,6 +196,15 @@ class TaskJuggler
     Log.exit('generateReport')
     true
   end
+
+  def setOutputDir(outputDir)
+    return unless outputDir
+
+    # Make sure the output directory path always ends with a '/' unless empty.
+    outputDir += '/' unless outputDir.empty? || outputDir[-1] == '/'
+    @project.outputDir = outputDir
+  end
+  private :setOutputDir
 
   # List the details of the report with _reportId_ or if _regExpMode_ the
   # reports that match the regular expression in _reportId_.
@@ -386,4 +393,3 @@ class TaskJuggler
   end
 
 end
-

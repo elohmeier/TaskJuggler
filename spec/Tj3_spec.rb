@@ -13,6 +13,7 @@
 #
 
 require 'rubygems'
+require 'tmpdir'
 require 'taskjuggler/StdIoWrapper'
 require 'taskjuggler/apps/Tj3'
 
@@ -26,6 +27,38 @@ class TaskJuggler
 
     include StdIoWrapper
 
+    def generateSelectedReport(option, selector)
+      Dir.mktmpdir('tj3-output-dir-') do |dir|
+        outputDir = File.join(dir, 'output')
+        projectFile = File.join(dir, 'project.tjp')
+        workDir = File.join(dir, 'work')
+        Dir.mkdir(outputDir)
+        Dir.mkdir(workDir)
+        File.write(projectFile, <<~'TJP')
+          project "Foo" 2011-03-14 +1d {
+            timezone "UTC"
+          }
+          task "Foo"
+          taskreport overview "overview" {
+            formats html
+          }
+        TJP
+
+        result = nil
+        Dir.chdir(workDir) do
+          result = stdIoWrapper do
+            Tj3.new.main([ '--silent', '--output-dir', outputDir,
+                           option, selector, projectFile ])
+          end
+        end
+
+        result.stdErr.should eq('')
+        result.returnValue.should eq(0)
+        File.file?(File.join(outputDir, 'overview.html')).should be(true)
+        Dir.children(workDir).should be_empty
+      end
+    end
+
     it 'should schedule a project' do
       prj = 'project "Foo" 2011-03-14 +1d task "Foo"'
       res = stdIoWrapper(prj) do
@@ -35,7 +68,14 @@ class TaskJuggler
       res.returnValue.should == 0
     end
 
+    it 'writes --report output to the output directory' do
+      generateSelectedReport('--report', 'overview')
+    end
+
+    it 'writes --reports output to the output directory' do
+      generateSelectedReport('--reports', '^overview$')
+    end
+
   end
 
 end
-
