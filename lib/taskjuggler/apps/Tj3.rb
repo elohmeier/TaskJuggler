@@ -217,10 +217,10 @@ EOT
         return 1 if !tj.generateReports(@outputDir) || tj.errors > 0
       else
         @reportIDs.each do |id|
-          return 1 if !tj.generateReport(id, false)
+          return 1 if !tj.generateReport(id, false, nil, nil, @outputDir)
         end
         @reportRegExpIDs.each do |id|
-          return 1 if !tj.generateReport(id, true)
+          return 1 if !tj.generateReport(id, true, nil, nil, @outputDir)
         end
       end
 
@@ -230,4 +230,3 @@ EOT
   end
 
 end
-
